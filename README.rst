@@ -36,4 +36,4 @@ Presentations at conferences on the topic of research
 Software modules developed as part of the study
 ======================================================
 1. A python package *mylib* with all implementation `here <https://github.com/Intelligent-Systems-Phystech/ProjectTemplate/tree/master/src>`_.
-2. A code with all experiment visualisation `here <https://github.com/Intelligent-Systems-Phystech/ProjectTemplate/blob/master/code/main.ipynb>`_. Can use `colab <http://colab.research.google.com/github/Intelligent-Systems-Phystech/ProjectTemplate/blob/master/code/main.ipynb>`_.
+2. A code with all experiment visualisation `here <https://github.com/intsystems/Remizova-BS-Thesis/blob/master/code/Baseline_Style_Transfer.ipynb>`_. Can use `colab <https://colab.research.google.com/drive/1nDuJdRoWofhpxmEnjnY1UI6wM2DRYdyU?usp=sharing>`_.

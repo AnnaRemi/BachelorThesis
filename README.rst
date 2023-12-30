@@ -23,7 +23,10 @@
 Abstract
 ========
 
-Purus sit amet luctus venenatis lectus magna fringilla. Condimentum id venenatis a condimentum vitae sapien. Auctor neque vitae tempus quam pellentesque nec nam aliquam. Eget egestas purus viverra accumsan in. Nam aliquam sem et tortor. Donec et odio pellentesque diam volutpat commodo. Odio pellentesque diam volutpat commodo sed egestas. Sit amet dictum sit amet justo. Pellentesque sit amet porttitor eget. Imperdiet sed euismod nisi porta lorem mollis aliquam ut. Quis varius quam quisque id diam vel quam elementum. Ornare lectus sit amet est placerat in. Vulputate dignissim suspendisse in est ante. Elit sed vulputate mi sit amet mauris. Egestas sed tempus urna et pharetra pharetra. Viverra tellus in hac habitasse platea dictumst vestibulum rhoncus.
+Motivation: Style transfer in audio is the field of computer science which is not yet thoroughly studied and, therefore, is of great interest. Moreover, it finds its applications in many practical tasks like dubbing movies, investigating voice abilities and music writing without any effort. In this paper we’ve been working on the task of voice/music style transfer. While there are many approaches to the task: Variational Auto Encoder(VAE), Gaussian Mixture Models(GMM), Linear Homodomain Transformations, it can be noticed that Image Style transfer is one of the most developed branches of Machine learning. That’s why the image-like approach to the audio style transfer is altered in this paper. 
+
+
+Keywords: MachineLearning,AudioStyletransfer,SpeechStyletransfer,ImageStyle Transfer, Deep Convolutional NN, Gram Matrix, Linear Transformation
 
 Research publications
 ===============================

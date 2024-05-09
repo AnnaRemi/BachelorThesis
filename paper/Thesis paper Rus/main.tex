@@ -1,0 +1,82 @@
+\documentclass[a4paper,14pt]{extarticle}
+\usepackage[utf8]{inputenc}
+\usepackage[T1,T2A]{fontenc}
+\usepackage[english,russian]{babel}
+
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{euscript}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{caption}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+
+
+\usepackage[toc,page]{appendix}
+
+\usepackage{comment}
+\usepackage{rotating}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\E}{\mathbb{E}}
+
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}[theorem]{Лемма}
+\newtheorem{definition}{Определение}[section]
+
+\numberwithin{equation}{section}
+
+\newcommand*{\No}{No.}
+
+\begin{document}
+
+% Титульный лист
+%\input{./frontpage.tex}
+
+% Аннотация
+\input{./annotation.tex}
+
+% Нумерация должна начинаться со второй страницы
+\setcounter{page}{2}
+
+% Оглавление
+\newpage
+\tableofcontents
+
+% Обозначения и сокращения
+% \input{./dict.tex}
+
+% Введение
+\input{./introduction.tex}
+
+
+% Постановка задачи классификации текстов
+\input{./task.tex}
+
+% Предложенный метод
+\input{./methods.tex}
+
+% Рубрика эксперименты
+\input{./experiments.tex}
+
+
+% Выводы
+\input{./conclusion.tex}
+
+% Библиографические ссылки
+\newpage
+\bibliographystyle{plain}
+\bibliography{ref} 
+
+% Приложения
+%\input{./appendices.tex}
+
+\end{document}

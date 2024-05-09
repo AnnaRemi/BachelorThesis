@@ -1,0 +1,34 @@
+\newpage
+
+
+\section{Постановка задачи классификации текстов}
+Модель семейства трансформеров решает проблему генерации последовательность в последовательность(англ. seq2seq), которая формулируется следующим образом согласно~\cite{thickstun2021transformer}: 
+\begin{align}
+f_\theta: \mathbb{R}^{n \times d} \rightarrow \mathbb{R}^{n \times d}   
+\end{align}
+где модель $f_{\theta}$ отображает неупорядоченный набор из $n$ элементов в $\mathbb{R}^{d}$ в другой неупорядоченный набор из $n$ элементов в $\mathbb{R}^{d}$. Требуется переформулировать задачу в классификатор текстов, определяя, были ли они написаны человеком или одной из трех предложенных языковых моделей.
+\begin{align}
+f_\theta : \hat{V} \rightarrow [N_c]
+\end{align}
+где $\hat{V} \subset V^{}$; $V$~--- словарь токенов и $V^{}$~--- его замыкание или множество всех текстов над $V$, $[N_c]$ - множество классов. Таким образом, модель отображает текст из $\hat{V}$ в класс из $[N_c]$.
+
+Тогда $(X_i, c_i) \in V^{*} \times [N_c]$ для $i \in [N_{data}]$ является парой текст-класс, выбранной из $P(X, c)$, где $X_i$ - входной текст, а $c_i$~--- его класс. Таким образом, наша цель - оценить $P(c|X)$.
+
+Согласно~\cite{hu2021lora} при дообучении модель инициализируется предварительно обученными весами $\Phi_0$ и обновляется до $\Phi_0 + \delta\Phi$. Тогда задача минимизации функции потерь имеет вид:
+\begin{equation}
+\label{eq:12} 
+\begin{aligned}
+\min _{\Phi} -\sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi}\left(c_i \mid X_i\right)\right) =\\ 
+= \max _{\Phi} \sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi}\left(c_i \mid X_i\right)\right)
+\end{aligned}
+\end{equation}
+Здесь $\mid\Delta\Phi\mid = \mid\Phi_0\mid$.\\ В то время как при использовании LoRA: $\Delta\Phi = \Delta\Phi(\Theta)$, где $\Theta$ - набор параметров намного меньшего размера, $\mid\Theta\mid \ll \mid\Phi_0\mid$ и задача минимизации функции потерь имеет вид:
+\begin{equation}
+\label{eq:13}
+\begin{aligned}
+\min _{\Theta} -\sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Delta \Phi(\Theta)}\left(c_i \mid X_i\right)\right) =\\
+= \max _{\Theta} \sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Delta \Phi(\Theta)}\left(c_i \mid X_i\right)\right) 
+\end{aligned}
+\end{equation}
+
+

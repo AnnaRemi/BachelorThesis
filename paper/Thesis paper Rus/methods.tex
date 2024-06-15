@@ -20,7 +20,7 @@
 где~$W \in \mathbb{R}^{d \times k}$~--- предобученные веса,~$\Delta W \in \mathbb{R}^{d \times k}$~--- матрица обновленных весов.~$\Delta W$ приближается с помощью метода LoRA произведением~$AB$, где~$A \in \mathbb{R}^{d \times r}$,~$B \in \mathbb{R}^{r \times k}$ и~$r$~--- ранг матрицы, являющийся гиперпараметром модели. Здесь~$A \sim \mathcal{N}(0,\,\sigma^{2})$ и~$B = [0]_{r \times k}$. 
 
 \subsection{Состоятельность предложенной модели}
-Состоятельность модели трансформер была доказана в работе~\cite{lee2023mathematical}. Доказательство приведено для задачи классификации:
+Состоятельность модели трансформер была доказана в работе~\cite{lee2023mathematical}. Здесь теорема \ref{theorem:1} сформулированна для задачи классификации.
 \begin{theorem}
 \label{theorem:1}
 Будем считать, что: 
@@ -35,7 +35,7 @@
 \end{enumerate}
 \begin{equation}
 \label{eq:2.1}
-\mathscr{L}(\Theta) = -\frac{1}{\mid \hat{V} \mid}\sum_{X_i \in \hat{V}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Theta}\left(c_i \mid X_i\right)\right).
+\mathscr{L}(\Theta) = -\frac{1}{\mid \hat{V} \mid} \sum_{X_i \in \hat{V}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Theta}\left(c_i \mid X_i\right)\right).
 \end{equation}
 
 Тогда минимизация функции потерь~$\mathscr{L}(\Theta)$ приводит к состоятельной оценке истинного распределения, порождающего данные. Т.е.: 
@@ -47,8 +47,35 @@
 \end{theorem}
 \renewcommand\qedsymbol{$\blacksquare$}
 \begin{proof}
-В силу равномерной сходимости функции потерь и силу утверждения~\ref{statement:1} из статьи~\cite{donini2018empirical}, которое приведено в приложении:
-минимум~$\mathscr{L}(\Theta)$ стремится к минимуму ожидаемого риска~\begin{equation}
+В силу равномерной сходимости функции потерь и силу утверждения~\ref{statement:1} из статьи~\cite{donini2018empirical}:
+\begin{lemma}
+\label{statement:1}
+Утверждение из статьи~\cite{donini2018empirical}:
+В терминах постановки задачи классификации текстов:
+для функции риска $L(\Theta)$:
+\begin{equation}
+\label{eq:2.3}
+L(\Theta) = \E _{X_i} \mathscr{L}(X_i; \Theta),
+\end{equation}
+и функции эмпирического риска $\hat{L}(\Theta)$:
+\begin{equation}
+\hat{L}(\Theta) = \frac{1}{\mid \hat{V} \mid} \sum_{X_i \in \hat{V}} \mathscr{L}(X_i; \Theta), 
+\end{equation}
+\text{верно следующее:}
+\begin{equation}
+\sup _{\Theta} \mid L(\Theta) - \hat{L}(\Theta) \mid \le \delta(\mid \hat{V} \mid):
+\end{equation}
+\begin{equation}
+\delta(\mid \hat{V} \mid) \xrightarrow[\mid \hat{V} \mid \rightarrow \inf]{} 0.
+\end{equation}
+\end{lemma}
+Заметим, что 
+\begin{equation}
+\begin{aligned}
+    \frac{1}{\mid \hat{V} \mid} \sum_{X_i \in \hat{V}} \mathscr{L}(X_i; \Theta) =&\\  - \frac{1}{\mid \hat{V} \mid} \sum_{X_i \in \hat{V}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Theta}\left(c_i \mid X_i\right)\right) =&\\ \mathscr{L}(X_i; \Theta).
+\end{aligned}
+\end{equation}
+Тогда минимум~$\mathscr{L}(\Theta)$ стремится к минимуму ожидаемого риска~\begin{equation}
     R_{exp}=\E _{X_i \sim P_{true}} [\mathscr{L}(X_i; \Theta)],
 \end{equation}при размере $\hat{V}$ стремящемся к бесконечности:
 \begin{equation}
@@ -123,7 +150,7 @@ V^{(h)}\left(\mathbf{x}_i\right)&=W_{h, v}^T \mathbf{x}_i,
 \end{equation}
 где $Q^{(h)}\left(\mathbf{x}_i\right), K^{(h)}\left(\mathbf{x}_i\right), V^{(h)}\left(\mathbf{x}_i\right)$~--- линейные проекции входного вектора $\mathbf{x}$ запрос, ключ, значение~(англ. Query, Key, Value) и $\alpha_{i,j}^{(h)}$~--- вектор внимания, $\mathbf{u}_i^{\prime}$~--- выходная матрица слоя attention такого же размера, как и входная $\mathbf{x}_i$~\cite{vaswani2017attention}.
 
-Нормализация по слою~(англ. Layer normalization)~--- нормализует активации предыдущего слоя для каждого входа в партиции~(англ. batch) независимо друг от друга, а не по всей партиции, как при batch нормализации. То есть, применяет преобразование, которое поддерживает среднее в пределах каждого входа близким к 0 и стандартное отклонение активации близким к 1~\cite{ba2016layer}.
+Нормализация по слою~(англ. Layer normalization)~--- нормализует активации предыдущего слоя для каждого входа в партиции~(англ. batch) независимо друг от друга, а не по всей партиции, как при batch нормализации. То есть, применяет преобразование, которое поддерживает среднее в пределах каждого входа близким к 0 и стандартное отклонение активации близким к 1~\cite{ba2016layer}. Принимает на вход $\mathbf{x}_i$~--- входной вектор и $\mathbf{u}_i^{\prime}$~--- результат слоя внимания:
 \begin{equation}
 \begin{aligned}
 &\mathbf{u}_i=\operatorname{LayerNorm}\left(\mathbf{x}_i+\mathbf{u}_i^{\prime} ; \gamma_1, \beta_1\right), \\
@@ -138,19 +165,22 @@ V^{(h)}\left(\mathbf{x}_i\right)&=W_{h, v}^T \mathbf{x}_i,
 &
 \end{aligned}
 \end{equation}
-Сеть прямого распространения~(англ. Feed Forward Network) представляет собой двухслойную нейронную сеть с активацией ReLU:
+Сеть прямого распространения~(англ. Feed Forward Network) представляет собой двухслойную нейронную сеть с активацией ReLU, принимающей на вход $\mathbf{u}_i$, полученное на предыдущщем шаге после нормализации по слою:
 \begin{equation}
 \begin{aligned}
 & \mathbf{z}_i^{\prime}=W_2^T \operatorname{ReLU}\left(W_1^T \mathbf{u}_i + b_1\right) + b_2. \\
 \end{aligned}
 \end{equation}
 %пояснить!
-Нормализация по слою:
+Нормализация по слою, принимающая результат сети прямого распространения~$\mathbf{z}_i^{\prime}$, а также результат предыдущей нормализации по слою~$\mathbf{u}_i$:
 \begin{equation}
 \begin{aligned}
-\mathbf{z}_i=\text { LayerNorm }\left(\mathbf{u}_i+\mathbf{z}_i^{\prime} ; \gamma_2, \beta_2\right) \text {, }
+\mathbf{z}_i=\text { LayerNorm }\left(\mathbf{u}_i+\mathbf{z}_i^{\prime} ; \gamma_2, \beta_2\right).
 \end{aligned}
 \end{equation}
+
+
+Таким образом, слои $(3.17) - (3.22)$ повторяются 12 раз для модели BERT base и 24 раза для модели BERT large. В данной работе рассматривается архитектура DistilRoBERTa base и, соответственно, 12 повторейний слоев $(3.17) - (3.22)$.
 
 
 \begin{theorem}
@@ -204,8 +234,8 @@ V^{(h)}\left(\mathbf{x}_i\right)&=W_{h, v}^T \mathbf{x}_i,
 \begin{equation}
 \label{eq:11}
 \begin{aligned}
- \underset{(k \times d)}{\Delta W^T} \times \mathbf{x} = u\\
-(\underset{(d \times r)}{A} \times \underset{(r \times k)}{B})^T \times \mathbf{x} = (\underset{(k \times r)}{B^T} \times \underset{(r \times d)}{A^T}) \times \mathbf{x} = u^*.
+ \underset{(k \times d)}{\Delta W^T} \times \mathbf{x} =& u\\
+(\underset{(d \times r)}{A} \times \underset{(r \times k)}{B})^T \times \mathbf{x} = (\underset{(k \times r)}{B^T} \times \underset{(r \times d)}{A^T}) \times \mathbf{x} =& u^*.
 \end{aligned}
 \end{equation}
 Так как~\eqref{eq:10}, можно заключить что~${u^*} = {u}$ и является корретной матрицей, а следовательно предложенная модель работает корректно.

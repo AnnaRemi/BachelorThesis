@@ -3,9 +3,7 @@
 
 \section{Вычислительный эксперимент}
 
-Открытый исходный датасет для мультиклассовой классификации текстов, написанных человеком и различными языковыми моделями~\cite{semeval2024task8}. Изначально было представлено 6 классов включая человека, но так как обучение на большем датасете требовало больше ресурсов, а основная задача сравнителного анализа - оценить качество предложенного метода при классификации человек vs языковая модель, то количество классов было сокращено до 4: ChatGPT, Davinci, Cohere, Humans. Это не повлияло на выводы, сделанные в данной работе.
-
-Всего в датасете~$47 327$ текстов с разметкой по классам. Средняя длина текста по всему датасету~---~$400$ слов, средняя длина текстов в зависимости от класса представлена в таблице~\ref{table:3}. Средняя длина слова~--- 5 символов. Вес каждого класса~--- безразмерная величина, показывающая насколько несбалансированна выборка и к каким классам применять большие веса. Статистика по весам классов приведена в таблице~\ref{table:2}.
+Открытый исходный датасет для мультиклассовой классификации текстов, написанных человеком и различными языковыми моделями~\cite{semeval2024task8}. В выборке рассматривается 4 класса: ChatGPT, Davinci, Cohere, Humans. Всего в датасете~$47 327$ текстов с разметкой по классам. Средняя длина текста по всему датасету~---~$400$ слов, средняя длина текстов в зависимости от класса представлена в таблице~\ref{table:3}. Средняя длина слова~--- 5 символов. Вес каждого класса~--- безразмерная величина, показывающая насколько несбалансированна выборка и к каким классам применять большие веса. Статистика по весам классов приведена в таблице~\ref{table:2}.
 \begin{table}[ht!]
     \centering
     \begin{tabularx}{.75\textwidth} { 
@@ -49,9 +47,9 @@
 
 Заметим, что текст, написанный человеком, в среднем в 2-3 раза длиннее написанного машиной. При этом средняя длина слова для каждого класса одна и та же~--- 5 символов. Тексты были токенизированы при помощи RobertaTokenizer~\cite{wolf2019huggingface}, токенизатора использующего пары байтов для кодировки~(англ. Byte-Pair Encoding)~\cite{wang2020neural}. Дополнительная обработка не требуется из-за структуры модели~\cite{vaswani2017attention}. Для всех экспериментов использовалась предобученная модель DistilRoBERTa base~\cite{liu2019roberta}. Модель использовалась со следующими гиперпараметрами: доля тренировочного/тестового набора данных~---~$0.9/0.1$; 3 эпохи обучения. Для экспериментов с использованием алгоритма LoRA были использованы все вышеуказанные параметры, а также ранг матриц аппроксимации~$r = 5$.
 
-После обучения для оценки использовались матрица ошибок и метрики точности, полноты, F1-меры, а также для визуализации ошибки использовалась матрица ошибок~(англ. Confusion matrix) как наиболее точно отображающие качетво моделей мультиклассовой классификации~\cite{grandini2020metrics}. В матрице ошибок по вертикали указаны истинные метки классов, а по горизонтали~--- предсказанные.
+После обучения для оценки использовались матрица ошибок и метрики точности, полноты, f1 меры, а также для визуализации ошибки использовалась матрица ошибок~(англ. Confusion matrix) как наиболее точно отображающие качетво моделей мультиклассовой классификации~\cite{grandini2020metrics}. В матрице ошибок по вертикали указаны истинные метки классов, а по горизонтали~--- предсказанные.
 
-\subsection{Предобученная модель DRoBERTa-base, мультиклассовая классификация.}
+\subsection{Предобученная модель DistilRoBERTa, мультиклассовая классификация.}
 Результаты обучения данной модели представлены в таблице~\ref{table:4}. Для наглядного описания качества модели используется матрица ошибок: таблица~\ref{table:5}.
 \begin{table}[ht!]
     \centering
@@ -61,7 +59,7 @@
       | >{\centering\arraybackslash}X 
       | >{\raggedleft\arraybackslash}X | }
      \hline
-     \textbf{имя класса}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      chatGPT & 1.000 & 0.993 & 0.997\\
      \hline
@@ -72,7 +70,7 @@
      human & 0.991 & 0.952 & 0.971\\
      \hline
     \end{tabularx}
-    \caption{Метрики качетва DRoBERTa-base}
+    \caption{Метрики качетва DistilRoBERTa}
     \label{table:4}
 \end{table}
 \begin{table}[ht!]
@@ -84,13 +82,13 @@
     & Davinci & \cellcolor{bubbles}{0.0} & \cellcolor{bubbles}{0.001} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.996}}} & \cellcolor{bubbles}{0.003}\\ \cline{2-6}
 & Human & \cellcolor{bubbles}{0.0} & \cellcolor{bubbles}{0.035} & \cellcolor{bubbles}{0.013} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.952}}}\\ 
 \end{tabular} 
-\caption{Матрица ошибок, DRoBERTa-base}
+\caption{Матрица ошибок, DistilRoBERTa}
 \label{table:5}
 \end{table}
-Модель показала высокое качество на уровне 99\%, но потребовала много вычислительных ресурсов: время обучения заняло: 4041.3188 секунд. Построим модель с использованием LoRA, чтобы ускорить обучение и уменьшить ресурсозатратность.
+Модель показала высокое качество на уровне 99\%, но потребовала много вычислительных ресурсов: время обучения заняло: 4041 секунд. Построим модель с использованием LoRA, чтобы ускорить обучение и уменьшить ресурсозатратность.
 
-\subsection{Предобученная модель DRoBERTa-base \& LoRA, мультиклассовая классификация.}
-Только 0.828\% параметров обучаются при использовании LoRA: \textit{trainable params: 685828, all: 82807304 || trainable\%: 0.8282}, а затраченное время обучения~--- 3210.977 секунд, по сравнению с 4041.3 из первого эксперимента. Но качество модели заметно упало. Это наиболее заметно в классе human: recall составил всего 31,7\%, что отображено в таблице~\ref{table:6}. Матрица ошибок также демонстрирует разкое ухудшение метрик;матрица ошибок для данноого эксперимента представлена в таблице~\ref{table:7}.
+\subsection{Предобученная модель DistilRoBERTa \& LoRA, мультиклассовая классификация.}
+Только 0.828\% параметров обучаются при использовании LoRA: всего в модели 82807304 параметров, из них 685828 обучаемых. Причем затраченное время обучения~--- 3211 секунд, по сравнению с 4041 из первого эксперимента. Но качество модели заметно упало. Это наиболее заметно в классе human: полнота составила всего 31,7\%, что отображено в таблице~\ref{table:6}. Матрица ошибок также демонстрирует разкое ухудшение метрик; матрица ошибок для данноого эксперимента представлена в таблице~\ref{table:7}.
 \begin{table}[ht!]
     \centering
     \begin{tabularx}{\textwidth} { 
@@ -99,7 +97,7 @@
       | >{\centering\arraybackslash}X 
       | >{\raggedleft\arraybackslash}X | }
      \hline
-     \textbf{model}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      chatGPT & 0.997 & 0.786 & 0.879\\
      \hline
@@ -110,7 +108,7 @@
      human & 0.717 & 0.317 & 0.440\\
      \hline
     \end{tabularx}
-    \caption{Метрики качетва DRoBERTa-base \& LoRA}
+    \caption{Метрики качетва DistilRoBERTa \& LoRA}
     \label{table:6}
 \end{table}
 \begin{table}[ht!]
@@ -123,15 +121,16 @@
     & Davinci & \cellcolor{bubbles}{0.001} & \cellcolor{bubbles}{0.03} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.98}}} & \cellcolor{bubbles}{0.0}\\ \cline{2-6}
     & Human & \cellcolor{bubbles}{0.002} & \cellcolor{babyblueeyes}{0.43} & \cellcolor{babyblueeyes}{0.25} & \cellcolor{babyblueeyes}{{\textbf{0.32}}}\\ 
 \end{tabular} 
-\caption{Confusion matrix,\\ DRoBERTa-base~\&~LoRA}
+\caption{Матрица ошибок,\\ DistilRoBERTa~\&~LoRA}
 \label{table:7}
 \end{table}
 
-Метрики качества заметно упали. В большей степени для класса human, который представляет наибольший интерес: в первую очередь важнее всего классифицировать human vs ai, и если текст написала языковая модель, то определять какая. В следующем эксперименте проверим гипотезу: предполагаемая скорость обучения сохранится, а метрики качества вырастут.
+Метрики качества заметно упали. В большей степени для класса human, который представляет наибольший интерес: в первую очередь важнее всего классифицировать human vs AI, и если текст написала языковая модель, то определять какая. В следующем эксперименте проверим гипотезу: предполагаемая скорость обучения сохранится, а метрики качества вырастут.
 
-\subsection{Три независимые модели DRoBERTa-base \& LoRA, бинарная классификация.}
-\textbf{ChatGPT vs Human}\\ 
-Эксперимент, представленный здесь, аналогичен предыдущему, но три независимые модели решают задачи бинарной классификации, а потом их результат успедняется. В первой части этого эксперимента рассмотрим классы chatGPT и human. Время обучения сократилось в несколько раз, как и предполагалось, и составило 1633.8114 секунд. Метрики качества также выросли и в среднем составили 95\%. Особенно хоршие результаты показаны на классе human~--- до 100\%. Результаты представлены в таблицах~\ref{table:8},~\ref{table:9}.
+\subsection{Три независимые модели DistilRoBERTa~\&~LoRA, бинарная классификация.}
+\paragraph{ChatGPT vs Human}
+
+Эксперимент, представленный здесь, аналогичен предыдущему, но три независимые модели решают задачи бинарной классификации, а потом их результат успедняется. В первой части этого эксперимента рассмотрим классы chatGPT и human. Время обучения сократилось в несколько раз, как и предполагалось, и составило 1634 секунды. Метрики качества также выросли и в среднем составили 95\%. Особенно хоршие результаты показаны на классе human~--- до 100\%. Результаты представлены в таблицах~\ref{table:8},~\ref{table:9}.
 \begin{table}[ht!]
     \centering
     \begin{tabularx}{\textwidth} { 
@@ -139,16 +138,15 @@
       | >{\centering\arraybackslash}X 
       | >{\centering\arraybackslash}X 
       | >{\raggedleft\arraybackslash}X | }
-     \multicolumn{4}{c}{\textbf{время обучения: 1633.8114 секунд}} \\
      \hline
-     \textbf{model}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      chatGPT & 1.000 & 0.891 & 0.942\\
      \hline
      human & 0.902 & 1.000 & 0.950\\
      \hline
     \end{tabularx} 
-    \caption{Метрики качетва DRoBERTa-base \& LoRA,\\ chatGPT vs Human}
+    \caption{Метрики качетва DistilRoBERTa~\&~LoRA,\\ chatGPT vs Human}
     \label{table:8}
 \end{table}
 
@@ -160,28 +158,28 @@
     & chatGPT & \cellcolor{bleudefrance}{\textcolor{white}{\textbf{0.892}}} & \cellcolor{babyblue}{0.108} \\ \cline{2-4}
     & Human & \cellcolor{bubbles}{0.0} & \cellcolor{cobalt}{\textcolor{white}{\textbf{1.00}}}\\ 
 \end{tabular} 
-\caption{Матрица ошибок,\\ DRoBERTa-base~\&~LoRA, chatGPT vs Human}
+\caption{Матрица ошибок,\\ DistilRoBERTa~\&~LoRA, chatGPT vs Human}
 \label{table:9}
 \end{table} 
-\textbf{Cohere vs Human}\\ 
-Аналогично, заметен резкий рост в качетсве, в особенности для класса human. Также время обучения значительно сократилось и составило 1583.556 секунд. Выводы аналогичны первой части данного эксперимента. Результат представлен в таблице~\ref{table:10} и матрица ошибок представлена в таблице~\ref{table:11}.
+\paragraph{Cohere vs Human}
+
+Аналогично, заметен резкий рост в качетсве, в особенности для класса human. Также время обучения значительно сократилось и составило 1584 секунды. Выводы аналогичны первой части данного эксперимента. Результат представлен в таблице~\ref{table:10} и матрица ошибок представлена в таблице~\ref{table:11}.
 \begin{table}[ht!]
     \centering
     \begin{tabularx}{\textwidth} { 
       | >{\raggedright\arraybackslash}X 
       | >{\centering\arraybackslash}X 
       | >{\centering\arraybackslash}X 
-      | >{\raggedleft\arraybackslash}X | }
-      \multicolumn{4}{c}{\textbf{время обучения: 1583.556 секунд}} \\ 
+      | >{\raggedleft\arraybackslash}X | } 
      \hline
-     \textbf{model}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      cohere & 0.999 & 0.837 & 0.911\\
      \hline
      human & 0.853 & 0.999 & 0.920\\
      \hline
     \end{tabularx}
-    \caption{Метрики качетва DRoBERTa-base \& LoRA,\\ Cohere vs Human}
+    \caption{Метрики качетва DistilRoBERTa~\&~LoRA,\\ Cohere vs Human}
     \label{table:10}
 \end{table}
 \begin{table}[ht!]
@@ -192,12 +190,13 @@
     & Cohere & \cellcolor{bleudefrance}{\textcolor{white}{\textbf{0.837}}} & \cellcolor{babyblue}{0.163} \\ \cline{2-4}
     & Human & \cellcolor{bubbles}{0.001} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.999}}}\\ 
 \end{tabular} 
-\caption{Матрица ошибок,\\ DRoBERTa-base~\&~LoRA, Cohere vs Human}
+\caption{Матрица ошибок,\\ DistilRoBERTa~\&~LoRA, Cohere vs Human}
 \label{table:11}
 \end{table} 
 
-\textbf{Davinci vs Human}\\ 
-Наблюдения аналогичны предыдущим в рамках эксперимента. Время обучения составило 1632.395 секунд. Результат эксперимента представлен в таблице~\ref{table:12} и матрица несоответсвий представлена в таблице~\ref{table:13}. Если усреднить показатели трех моделей эксперимента, то можно заметить улучшение качества по сравнению с метриками качетва DistilRoBERTa base \& LoRA для мультиклассовой классификации; для класса human recall составил 99\%, для других классов особенно выросла метрика precision~--- до 99\% в среднем, в сравнении с 97\% из первого эксперимента, где к модели DistilRoBERTa base не применялся LoRA адаптер. Результат представлен в таблицах~\ref{table:14} и ~\ref{table:15}.
+\paragraph{Davinci vs Human}
+
+Наблюдения аналогичны предыдущим в рамках эксперимента. Время обучения составило 1632 секунды. Результат эксперимента представлен в таблице~\ref{table:12} и матрица несоответсвий представлена в таблице~\ref{table:13}. Если усреднить показатели трех моделей эксперимента, то можно заметить улучшение качества по сравнению с метриками качетва DistilRoBERTa~\&~LoRA для мультиклассовой классификации; для класса human полнота составила 99\%, для других классов особенно выросла точность~--- до 99\% в среднем, в сравнении с 97\% из первого эксперимента, где к модели DistilRoBERTa base не применялся LoRA адаптер. Результат представлен в таблицах~\ref{table:14} и ~\ref{table:15}.
 
 \begin{table}[ht!]
     \centering
@@ -205,17 +204,16 @@
       | >{\raggedright\arraybackslash}X 
       | >{\centering\arraybackslash}X 
       | >{\centering\arraybackslash}X 
-      | >{\raggedleft\arraybackslash}X | }
-    \multicolumn{4}{c}{\textbf{время обучения: 1632.395 секунд}} \\ 
+      | >{\raggedleft\arraybackslash}X | } 
      \hline
-     \textbf{model}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      davinci & 0.996 & 0.851 & 0.918\\
      \hline
      human & 0.870 & 0.997 & 0.929\\
      \hline
     \end{tabularx}
-    \caption{Метрики качетва DRoBERTa-base \& LoRA,\\Davinci vs Human}
+    \caption{Метрики качетва DistilRoBERTa~\&~LoRA,\\Davinci vs Human}
     \label{table:12}
 \end{table}
 \begin{table}[ht!]
@@ -226,7 +224,7 @@
     & Davinci & \cellcolor{bleudefrance}{\textcolor{white}{\textbf{0.852}}} & \cellcolor{babyblue}{0.148} \\ \cline{2-4}
     & Human & \cellcolor{bubbles}{0.003} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.997}}}\\ 
 \end{tabular} 
-\caption{Матрица ошибок,\\ DRoBERTa-base~\&~LoRA, Davinci vs Human}
+\caption{Матрица ошибок,\\ DistilRoBERTa~\&~LoRA, Davinci vs Human}
 \label{table:13}
 \end{table} 
 
@@ -238,7 +236,7 @@
       | >{\centering\arraybackslash}X 
       | >{\raggedleft\arraybackslash}X | }
      \hline
-     \textbf{model}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      chatGPT & 1.000 & 0.891 & 0.942\\
      \hline
@@ -249,7 +247,7 @@
      human & 0.875 & 0.999 & 0.933\\
      \hline
     \end{tabularx}
-    \caption{Метрики качетва DRoBERTa-base \& LoRA, бинарные классификаторы}
+    \caption{Метрики качетва DistilRoBERTa~\&~LoRA, бинарные классификаторы}
     \label{table:14}
 \end{table}
 
@@ -261,7 +259,7 @@
       | >{\centering\arraybackslash}X 
       | >{\raggedleft\arraybackslash}X | }
      \hline
-      \textbf{model}  & \textbf{precision} & \textbf{recall} & \textbf{f1-score}\\
+      \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
      \hline
      chatGPT & 1.000 & 0.993 & 0.997\\
      \hline
@@ -272,10 +270,10 @@
      human & 0.991 & 0.952 & 0.971\\
      \hline
     \end{tabularx}
-    \caption{Метрики качетва DRoBERTa-base, мультиклассовая классификация}
+    \caption{Метрики качетва DistilRoBERTa, мультиклассовая классификация}
     \label{table:15}
 \end{table}
-Итого, в эксперименте, использующем DistilRoBERTa base \& LoRA для бинарной классификации и последующего усреднения, качество классификации выросло, не потеряв во времени обучения, по сравнению с предобученной моделью DistilRoBERTa base. А также по результатам эксперимента с использованием DistilRoBERTa base \& LoRA для бинарной классификации, модель сильно выиграла в качестве у модели DRoBERTa-base \& LoRA для мультиклассовой классификации, но проиграв ей во времени обучения. 
+Итого, в эксперименте, использующем DistilRoBERTa~\&~LoRA для бинарной классификации и последующего усреднения, качество классификации выросло, не потеряв во времени обучения, по сравнению с предобученной моделью DistilRoBERTa. А также по результатам эксперимента с использованием DistilRoBERTa base \& LoRA для бинарной классификации, модель сильно выиграла в качестве у модели DRoBERTa-base \& LoRA для мультиклассовой классификации, но проиграв ей во времени обучения. 
 
 
 

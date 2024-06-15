@@ -1,0 +1,365 @@
+\documentclass[9pt,pdf,hyperref={unicode}]{beamer}
+\beamertemplatenavigationsymbolsempty
+
+\setbeamertemplate{blocks}[rounded=true, shadow=true]
+\setbeamertemplate{footline}[page number]
+\usepackage{multicol}
+
+\usefonttheme{serif}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{amsmath,mathrsfs,mathtext}
+\usepackage{graphicx, epsfig}
+\usepackage{caption}
+\usepackage{subfig}
+\usepackage{amsmath, bm}
+
+\usepackage{comment}
+
+\usepackage{tabularx}
+\addtobeamertemplate{navigation symbols}{}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+
+
+%%%%%%%%%%%%%%%%%%%%
+\usepackage{multirow}
+\usepackage{colortbl}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{blue(munsell)}{rgb}{0.0, 0.5, 0.69}
+\definecolor{blue(ncs)}{rgb}{0.0, 0.53, 0.74}
+\definecolor{bleudefrance}{rgb}{0.19, 0.55, 0.91}
+\definecolor{ceruleanblue}{rgb}{0.16, 0.32, 0.75}
+\definecolor{cobalt}{rgb}{0.0, 0.28, 0.67}
+\definecolor{babyblue}{rgb}{0.54, 0.81, 0.94}
+\definecolor{babyblueeyes}{rgb}{0.63, 0.79, 0.95}
+\definecolor{bubbles}{rgb}{0.91, 1.0, 1.0}
+%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{tikz}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\makeatletter
+\let\@@magyar@captionfix\relax
+\makeatother
+
+\usetheme{Warsaw}
+\usecolortheme{sidebartab}
+\definecolor{beamer@blendedblue}{RGB}{31,96,49}
+
+\setbeamertemplate{enumerate items}[circle]
+
+\setbeamersize{text margin left=1.5em, text margin right=1.5em}
+
+\usepackage{ragged2e}
+
+%----------------------------------------------------------------------------------------------------------
+\title[\hbox to 90mm{Снижение размерности пространства\hfill\insertframenumber\,/\,\inserttotalframenumber}]
+{Снижение размерности пространства обучаемых параметров в задаче адаптации к домену}
+\author[Ремизова А.\ В.]{\Large Ремизова Анна Вадимовна}
+\institute{ Московский физико-технический институт\\
+Физтех-школа прикладной математики и информатики\\
+Кафедра интеллектуальных систем\\
+~\\
+Научный руководитель к.ф.-м.н. А.\ В. Грабовой
+}
+
+\date{\footnotesize{\emph{Москва}\\
+ 2024 г}}
+%----------------------------------------------------------------------------------------------------------
+\begin{document}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}
+\titlepage
+\end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Введение}
+\justifying
+\textbf{Цель:}  Исследовать методы снижения размерности пространства обучаемых параметров при помощи сингулярного разложения матриц,
+а также показать кооректность применения изучаемых методов к задаче классификации текстов.
+
+~\\
+\textbf{Методы}
+
+\begin{enumerate}
+\justifying
+	\item Низкоранговое разложение применяемое к матрицам весов~(англ. Low Rank Adaptation) в больших языковых моделях.
+	\item Статистические методы оценки минимизации функции потерь, а также свойтва матриц для доказательства применимости предложенного метода к задаче классификации.
+\end{enumerate}
+
+~\\
+\textbf{Теоретическая значимость.}
+В работе проведен теоретический анализ проблемы снижения размерности пространства обучаемых параметров. Доказана теорема об применимости модели BERT~\cite{vaswani2017attention} с адаптером LoRA к задаче многоклассовой классификации. 
+
+~\\
+\textbf{Практическая значимость.}
+Проведен вычислительный эксперимент, показывающий улучшение качества и экономию ресурсов при решении задачи классификации текстов.
+~\\
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Постановка задачи классификации текстов}
+\justifying
+Для задачи классификации текстов:
+\begin{align}
+f_\theta : \hat{V} \rightarrow [N_c],
+\end{align}
+где~$\hat{V} \subset V^{*}$; $V$~--- словарь токенов и~$V^{*}$~--- его замыкание или множество всех последовательностей над~$V$,~$[N_c]$~--- множество классов. Таким образом, модель $f_{\theta}$ отображает текст из~$\hat{V}$ в класс из~$[N_c]$.
+~\\~\\
+Тогда~$(X_i, c_i) \in \hat{V} \times [N_c]$ для~$i \in [N_{data}]$ является парой текст~---класс, выбранной из~$P(X, c)$, где~$X_i$~--- входной текст, а~$c_i$~--- его класс. Таким образом, наша цель~--- оценить~$P(c|X)$.
+
+\end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}[shrink=5]{Постановка задачи классификации текстов}
+\justifying
+Согласно~\cite{hu2021lora} при дообучении модель инициализируется предварительно обученными весами~$\Phi_0$ и обновляется до~$\Phi_0 + \Delta\Phi$, где $\Delta\Phi$~--- набор дообучаемых параметров такой, что~$\mid\Delta\Phi\mid = \mid\Phi_0\mid$. Тогда задача минимизации функции потерь имеет вид:
+\begin{equation}
+\label{eq:12} 
+\begin{aligned}
+\min _{\Phi}~(-\sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi}\left(c_i \mid X_i\right)\right)) =\\ 
+= \max _{\Phi} \sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi}\left(c_i \mid X_i\right)\right),
+\end{aligned}
+\end{equation}
+В то время как при использовании LoRA~$\Delta\Phi$ задается набором параметров~$\Theta$ намного меньшего размера:~$\Delta\Phi = \Theta$, где~$\mid\Theta\mid \ll \mid\Phi_0\mid$ и задача минимизации функции потерь имеет вид:
+\begin{equation}
+\label{eq:13}
+\begin{aligned}
+\min _{\Theta}~(-\sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Theta}\left(c_i \mid X_i\right)\right)) =\\
+= \max _{\Theta} \sum_{X_i \in \hat{V} \subset V^{*}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Theta}\left(c_i \mid X_i\right)\right). 
+\end{aligned}
+\end{equation}
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}[shrink=5]{Предложенный метод}
+\justifying
+
+В данной работе LoRA применяется к задаче классификации. Структура обновления весов при использовании LoRA адаптера описана в таблице~\ref{table:1},
+\begin{table}[ht!]
+    \centering
+\begin{tabular}{ | c | c| } 
+ \hline
+  Fine tuning & LoRA fine tuning\\ 
+ \hline
+ $W_{upd} = W + \Delta W$ & $W_{upd} = W + AB$\\ 
+ $\hat{y} = xW_{upd}= x(W + \Delta W)$ & $\hat{y} = xW_{upd}= x(W + AB)$\\
+ $\hat{y} = xW + x\Delta W$ & $\hat{y} = xW + xAB$ \\
+ \hline
+\end{tabular}
+    \caption{Структура обновления весов при использовании LoRA адаптера}
+    \label{table:1}
+\end{table}
+
+где~$W \in \mathbb{R}^{d \times k}$~--- предобученные веса,~$\Delta W \in \mathbb{R}^{d \times k}$~--- матрица обновленных весов.~$\Delta W$ приближается с помощью метода LoRA произведением~$AB$, где~$A \in \mathbb{R}^{d \times r}$,~$B \in \mathbb{R}^{r \times k}$ и~$r$~--- ранг матрицы, являющийся гиперпараметром модели. Здесь~$A \sim \mathcal{N}(0,\,\sigma^{2})$ и~$B = [0]_{r \times k}$. 
+
+~\\
+Состоятельность модели трансформер была доказана в работе~\cite{lee2023mathematical}. Здесь теорема \ref{theorem:1} сформулированна для задачи классификации.
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Состоятельность предложенной модели}
+\justifying
+
+\begin{theorem}
+\label{theorem:1}
+Будем считать, что: 
+\begin{enumerate}
+    \item Задана модель с набором параметров~$\Theta^*$, генерирующая эмпирическое распределение данных~$P_{model}(\cdot, \Theta^*)$, которое аппроксимирует истинное распределение данных~$P_{true}$ с минимальным расхождением по KL-дивергенции: 
+    \begin{equation}
+    \label{eq:1}
+    \exists \Theta^*: \Theta^* = \argmin _\Theta D_{KL}(P_{true} \mid\mid P_{model}(\cdot, \Theta)),
+    \end{equation}
+     \item При увеличении размера выборки~$\hat{V}$ эмпирическое распределение данных $P_{model}(\cdot, \Theta^*)$ приближается к истинному распределению, генерирующему данные.
+     \item Функция ошибки~$\mathscr{L}(\Theta)$~--- непрерывная, дифференцируемая. Где
+\end{enumerate}
+\begin{equation}
+\label{eq:2.1}
+\mathscr{L}(\Theta) = -\frac{1}{\mid \hat{V} \mid} \sum_{X_i \in \hat{V}} \sum_{c_i \in [N_c]} \log \left(P_{\Phi_0+\Theta}\left(c_i \mid X_i\right)\right).
+\end{equation}
+
+Тогда минимизация функции потерь~$\mathscr{L}(\Theta)$ приводит к состоятельной оценке истинного распределения, порождающего данные. Т.е.: 
+\begin{equation}
+\label{eq:2.2}
+    \lim_{\mid\hat{V}\mid\to\infty} \argmin _\Theta \mathscr{L}(\Theta) = \Theta^*.
+\end{equation}
+
+\end{theorem}
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+
+\begin{frame}[shrink=5]{О применимости LoRA к задаче классификации}
+\justifying
+\begin{theorem}[Ремизова Анна, 2024]
+В рамках задачи классификации, при заданных условиях:
+\begin{enumerate}
+    \item Модель семейства BERT с дополнительным слоем 
+    \begin{equation}
+    \label{eq:6}
+        \hat{\mathbf{y}}=\operatorname{softmax}\left(W_{upd}^T \mathbf{x}\right)=\frac{\exp \left(W_{upd}^T \mathbf{x}\right)}{\sum_{i=1}^k \exp \left(W_{upd}^T \mathbf{x}\right)_i},
+    \end{equation}
+    где 
+    \begin{equation}
+    \label{eq:7}
+    W_{upd} =\underset{(d \times k) }{W} + \underset{(d \times k)}{\Delta W},
+    \end{equation}
+    и~$x$~---это выходной результат BERT,~$W$~--- матрица весов,~$\Delta W$~--- матрица обновленных весов.
+    \item  Данная модель BERT без дополнительного слоя также корректно работает с аппроксимацией 
+    \begin{equation}
+    \label{eq:8}
+    \underset{(d \times k)}{\Delta W} = \underset{(d \times r)}{ A} \times \underset{(r \times k)}{B},
+    \end{equation}
+    \item Выполняются условия теоремы~\ref{theorem:1}.~(можно считать данную модель состоятельной).
+\end{enumerate}
+Тогда можно утверждать, что при~\eqref{eq:8} заданная модель BERT с дополнительным слоем гарантирует корректную выходную матрицу.
+\end{theorem}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+
+\begin{frame}{Результаты эксперимента}
+\justifying
+Открытый исходный датасет для мультиклассовой классификации текстов, написанных человеком и различными языковыми моделями. В выборке рассматривается 4 класса: ChatGPT, Davinci, Cohere, Humans. Всего в датасете~$47 327$ текстов с разметкой по классам.
+
+~\\
+В эксперименте на данном датасете обучались модели DistilRoBERTa без использования LoRA адаптера, DistilRoBERTa~\&~LoRA, мультиклассовая классификация и параллельно три DistilRoBERTa~\&~LoRA для бинарной классификации с последующим усреднением результатов.
+
+~\\
+После обучения для оценки использовались метрики точности, полноты, f1 меры, а также для визуализации ошибки использовалась матрица ошибок~(англ. Confusion matrix) как наиболее точно отображающие качетво моделей мультиклассовой классификации~\cite{grandini2020metrics}. В матрице ошибок по вертикали указаны истинные метки классов, а по горизонтали~--- предсказанные.
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+
+\begin{frame}{Результаты эксперимента}
+\begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\textwidth} { 
+      | >{\raggedright\arraybackslash}X 
+      | >{\centering\arraybackslash}X 
+      | >{\centering\arraybackslash}X 
+      | >{\raggedleft\arraybackslash}X | }
+     \hline
+      \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
+     \hline
+     chatGPT & 1.000 & 0.993 & 0.997\\
+     \hline
+     cohere  & 0.963  & 0.999 & 0.981\\
+     \hline
+     davinci & 0.986 & 0.996 & 0.991\\
+     \hline
+     human & 0.991 & 0.952 & 0.971\\
+     \hline
+    \end{tabularx}
+    \caption{Метрики качетва DistilRoBERTa, мультиклассовая классификация}
+    \label{table:15}
+\end{table}
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\textwidth} { 
+      | >{\raggedright\arraybackslash}X 
+      | >{\centering\arraybackslash}X 
+      | >{\centering\arraybackslash}X 
+      | >{\raggedleft\arraybackslash}X | }
+     \hline
+     \textbf{имя класса}  & \textbf{точность} & \textbf{полнота} & \textbf{f1 мера}\\
+     \hline
+     chatGPT & 1.000 & 0.891 & 0.942\\
+     \hline
+     cohere  & 0.999  & 0.837 & 0.911\\
+     \hline
+     davinci & 0.996 & 0.851 & 0.918\\
+     \hline
+     human & 0.875 & 0.999 & 0.933\\
+     \hline
+    \end{tabularx}
+    \caption{Метрики качетва DistilRoBERTa~\&~LoRA, бинарные классификаторы}
+    \label{table:14}
+\end{table}
+
+\end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+
+\begin{frame}{Результаты эксперимента}
+\begin{table}[ht!]
+\centering
+\begin{tabular}{ cc|c|c|c|c }
+    && chatGPT & Cohere & Davinci & Human \\ \cline{2-6}
+    & chatGPT & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.993}}} & \cellcolor{bubbles}{0.002} & \cellcolor{bubbles}{0.0} & \cellcolor{bubbles}{0.005} \\ \cline{2-6}
+    & Cohere & \cellcolor{bubbles}{0.0} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.999}}} & \cellcolor{bubbles}{0.0} & \cellcolor{bubbles}{0.001} \\ \cline{2-6}
+    & Davinci & \cellcolor{bubbles}{0.0} & \cellcolor{bubbles}{0.001} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.996}}} & \cellcolor{bubbles}{0.003}\\ \cline{2-6}
+& Human & \cellcolor{bubbles}{0.0} & \cellcolor{bubbles}{0.035} & \cellcolor{bubbles}{0.013} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.952}}}\\ 
+\end{tabular} 
+\caption{Матрица ошибок, DistilRoBERTa}
+\label{table:5}
+\end{table}
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{ cc|c|c|c|c }
+    & & chatGPT & Cohere & Davinci & Human \\ \cline{2-6}
+    & chatGPT & \cellcolor{bleudefrance}{\textcolor{white}{\textbf{0.79}}} & \cellcolor{bubbles}{0.01} & \cellcolor{bubbles}{0.08} & \cellcolor{babyblue}{0.12} \\ \cline{2-6}
+    & Cohere & \cellcolor{bubbles}{0.0} & \cellcolor{ceruleanblue}{\textcolor{white}{\textbf{0.94}}} & \cellcolor{bubbles}{0.06} & \cellcolor{bubbles}{0.003} \\ \cline{2-6}
+    & Davinci & \cellcolor{bubbles}{0.001} & \cellcolor{bubbles}{0.03} & \cellcolor{cobalt}{\textcolor{white}{\textbf{0.98}}} & \cellcolor{bubbles}{0.0}\\ \cline{2-6}
+    & Human & \cellcolor{bubbles}{0.002} & \cellcolor{babyblueeyes}{0.43} & \cellcolor{babyblueeyes}{0.25} & \cellcolor{babyblueeyes}{{\textbf{0.32}}}\\ 
+\end{tabular} 
+\caption{Матрица ошибок,\\ DistilRoBERTa~\&~LoRA}
+\label{table:7}
+\end{table}
+
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+
+\begin{frame}{Результаты эксперимента}
+Итого, в эксперименте, использующем DistilRoBERTa~\&~LoRA для бинарной классификации и последующего усреднения, качество классификации выросло, не потеряв во времени обучения, по сравнению с предобученной моделью DistilRoBERTa.
+
+
+А также по результатам эксперимента с использованием DistilRoBERTa \& LoRA для мультиклассовой классификации, модель сильно выиграла по времени обучения у модели DRoBERTa для мультиклассовой классификации, но проиграв ей в качестве. 
+\end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+
+% \begin{frame}{Пример кластеризации точек временного ряда}
+% \justifying
+
+% \begin{center}
+% 	\includegraphics[width=0.8\textwidth]{results/experiment_clustering}
+% \end{center}
+
+% a) начальный временной ряд; b) матрица попарных расстояний; c) кластеризация точек ряда; d) Multidimential Scaling для матрицы попарных расстояний.
+% \end{frame}
+% %----------------------------------------------------------------------------------------------------------
+% \begin{frame}{Пример сегментации временного ряда}
+% \justifying
+% \begin{center}
+% 	\includegraphics[width=0.8\textwidth]{results/experiment_segmentation}
+% \end{center}
+% a) сегментация ряда; b) фазовая траектория для второго действия; c) фазовая траектория для первого действия.
+
+% \end{frame}
+%----------------------------------------------------------------------------------------------------------
+
+\begin{frame}{Выносится на защиту}
+\justifying
+
+	\begin{enumerate}
+	\justifying
+		\item Сформулирована и доказана теорема о применимости LoRA адаптера к задаче классификации текстов
+        \item Переформулирована теорема о состоятельности модели для модели с использованием LoRA адаптера
+        \item Проведен эксперимент и показана эффективность предложенного метода
+	\end{enumerate}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Список литературы}
+\bibliographystyle{unsrt}
+\bibliography{ref} 
+\end{frame}
+
+%----------------------------------------------------------------------------------------------------------
+
+\end{document} 
